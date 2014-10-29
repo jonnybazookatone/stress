@@ -5,9 +5,9 @@ import os, sys
 if __name__ == "__main__":
 
   with open("users.txt", "r") as f:
-    username, password = f.readlines()[0].strip().split(" ")
+    webpage, username, password = f.readlines()[0].strip().split(" ")
   
-  GP = WebPage("http://wgrpipe.ls.eso.org:9222")
+  GP = WebPage(webpage)
   GP.pageLoad(wait="dlg")
 
   GP.pageLogin(username=username, password=password,
