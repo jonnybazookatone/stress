@@ -50,19 +50,23 @@ if __name__ == "__main__":
 
   fig.autofmt_xdate() # automatically rotates dates appropriately for you figure. 
  
-  plt.savefig("/diska/home/jonny/sw/python/stress/stress/gp_timings.jpg", format="jpg")
+  image_out = "/diska/home/jonny/sw/python/stress/stress/gp_timings.jpg"
+
+  plt.savefig(image_out, format="jpg")
 
   upload = True
   if upload:
     wiki_content = wikiLib.exportPage("wgrpipe")
-    wiki_content = wiki_content[0:len(wiki_content)-3]
+    wiki_content = wiki_content[0:len(wiki_content)-4]
 
     wiki_content.append("== GP Benchmark Test ==")
     wiki_content.append("'''Updated bi-hourly.''' Last updated: {0}".format(datetime.datetime.today().isoformat()))
     wiki_content.append("")
     wiki_content.append("{{attachment:gp_timings.jpg||width=\"800\"}}")
+    wiki_content.append("")
+    wiki_content.append("'''Source''': https://github.com/jonnybazookatone/stress")
 
-    wikiLib.writetoPage("wgrpipe", wiki_content, attachment="gp_timings.jpg", clobber=True)
+    wikiLib.writetoPage("wgrpipe", wiki_content, attachment=image_out, clobber=True)
 
   print("Uploaded")
 
