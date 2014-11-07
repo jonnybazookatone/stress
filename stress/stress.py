@@ -1,6 +1,7 @@
 """Base class of stress testing"""
 import time
 import logging
+import sys
 from logging.handlers import RotatingFileHandler
 from selenium.webdriver import Firefox as ffx
 from selenium.webdriver.common.by import By
@@ -8,14 +9,26 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
+from xvfbwrapper import Xvfb
+
 __author__ = "Jonny Elliott"
 
 class WebPage(ffx):
   
-  def __init__(self, url):
+  def __init__(self, url, headless=False):
+
+    if headless:
+      self.makeHeadLess()
+
     ffx.__init__(self)
     self.url = url
     self.minimum_timeout = 60
+    self.headless = headless
+    self.timed_out = False
+
+    self.load_time = -99
+    self.login_time = -99
+    self.logout_time = -99
 
     # Logging
     logfmt = '%(levelname)s [%(asctime)s]:\t  %(message)s'
@@ -25,13 +38,18 @@ class WebPage(ffx):
     self.logger = logging.getLogger('__main__')
 
     logging.root.setLevel(logging.DEBUG)
-    rfh = RotatingFileHandler(filename="gp_timings.log",maxBytes=1048576,backupCount=3,mode='a')
+    rfh = RotatingFileHandler(filename="/diska/home/jonny/sw/python/stress/stress/gp_timings.log",maxBytes=1048576,backupCount=3,mode='a')
     rfh.setFormatter(formatter)
     ch = logging.StreamHandler()
     ch.setFormatter(formatter)
     self.logger.handlers = []
     self.logger.addHandler(ch)
     self.logger.addHandler(rfh)
+
+  def makeHeadLess(self):
+    self.xvfb = Xvfb(width=1280, height=720)
+    self.xvfb.start()
+    self.headless = True
 
   def pageLoad(self, wait=False):
 
@@ -46,12 +64,14 @@ class WebPage(ffx):
 
       except TimeoutException:
         self.logger.warning("TimeoutException thrown. Continuing.")
+        self.timed_out = True
 
       except:
         self.logger.error("Unexpected behaviour. Terminating.")
         sys.exit()
 
     end_time = time.time()
+
     self.load_time = end_time - start_time
      
     self.logger.info("Page loaded successfully.")
@@ -112,3 +132,8 @@ class WebPage(ffx):
     self.logout_time = end_time - start_time
    
     self.logger.info("Page logged out successfully.")
+
+  def quit(self):
+    if self.headless:
+      self.xvfb.stop()
+    super(WebPage, self).quit()
